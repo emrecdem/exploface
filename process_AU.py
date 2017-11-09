@@ -1,6 +1,27 @@
 
 import numpy as np
 
+
+def generateEmotionsFromAU(df):
+
+    df["happy"] = (df["AU06_r"]+df["AU12_r"])/2
+    df["surprise"]=(df["AU01_r"]+df["AU02_r"]+df["AU05_r"]+df["AU26_r"])/4
+    df["sad"]=(df["AU01_r"]+df["AU04_r"]+df["AU15_r"])/3
+    df["fear"]=(df["AU01_r"]+df["AU02_r"]+df["AU04_r"]+df["AU05_r"]+df["AU07_r"]+df["AU20_r"]+df["AU26_r"])/7 
+    df["anger"]=(df["AU04_r"]+df["AU05_r"]+df["AU07_r"]+df["AU23_r"])/4
+    df["disgust"]=(df["AU09_r"]+df["AU15_r"])/2
+
+    df["happy_c"] = (df["AU06_c"]+df["AU12_c"])/2
+    df["surprise_c"]=(df["AU01_c"]+df["AU02_c"]+df["AU05_c"]+df["AU26_c"])/4
+    df["sad_c"]=(df["AU01_c"]+df["AU04_c"]+df["AU15_c"])/3
+    df["fear_c"]=(df["AU01_c"]+df["AU02_c"]+df["AU04_c"]+df["AU05_c"]+df["AU07_c"]+df["AU20_c"]+df["AU26_c"])/7 
+    df["anger_c"]=(df["AU04_c"]+df["AU05_c"]+df["AU07_c"]+df["AU23_c"])/4
+    df["disgust_c"]=(df["AU09_c"]+df["AU15_c"])/2
+
+    return df
+
+
+
 def getSuccessTimes(df):
     return getActivationTimes(df, emo_key="success", method="threshold")
 def getFailTimes(df):
@@ -11,7 +32,11 @@ def getConfidenceTimes(df, confidence_threshold = 0.99):
 def getUnConfidenceTimes(df, confidence_threshold = 0.99):
     return getActivationTimes(df, emo_key="confidence", threshold=confidence_threshold, inverse_threshold=True)
 
-def getActivationTimes(df, emo_key, threshold=1, method="threshold", inverse_threshold = False, time_threshold=None, time_gap_smoothing=None, confidence_cut = None):
+def getActivationTimes(df, emo_key, threshold=1, method="threshold",
+                        inverse_threshold = False, time_threshold=None, 
+                        time_gap_smoothing=None, confidence_cut = None):
+
+
     if method == "mean":
         threshold_x_mean = threshold * df[emo_key].mean()
         #detected = np.all(
@@ -22,6 +47,10 @@ def getActivationTimes(df, emo_key, threshold=1, method="threshold", inverse_thr
         else: 
             detected = df[emo_key] >= threshold
 
+    if confidence_cut:
+        confident = df["confidence"] >= 0.8
+        detected = detected & confident
+
     start = False
     times = []
     time_entry = []
@@ -31,7 +60,6 @@ def getActivationTimes(df, emo_key, threshold=1, method="threshold", inverse_thr
                 start = True
                 time_entry.append(df.iloc[i]["timestamp"])
             if i == len(df)-1:
-                print("The end!")
                 time_entry.append(df.iloc[i]["timestamp"])
                 times.append(time_entry)                
         elif start:
@@ -65,7 +93,7 @@ def getActivationTimes(df, emo_key, threshold=1, method="threshold", inverse_thr
                 new_times.append(t)
         times = new_times
 
-    if confidence_cut:
+    #if confidence_cut:
         
 
     return times
