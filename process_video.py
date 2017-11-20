@@ -4,11 +4,6 @@ import pandas as pd
 import argparse
 from os.path import basename
 
-# input_dir = "DATA"
-# output_dir = "DATA"
-# files = ["video3"]
-# extension = ".mp4"
-
 # INITIALISE PARSER
 parser = argparse.ArgumentParser()
 parser.add_argument("input", help="")
@@ -51,16 +46,8 @@ if verbose:
 	print("Openface feature extraction executable: ", openface_feat_exe)
 
 
-# START PROCESSING
-# for f in files:
-# 	path = os.path.join(input_dir, f+extension)
-# 	path_out = os.path.join(output_dir, f+".csv")
-
-
 if verbose: print("Starting openface feature extraction")
 os.system(openface_feat_exe+" -f "+inputpath+" -of "+outputpath+"> output.temp")
 if verbose: print("Finished openface feature extraction, reading in csv file")
 datafile = pd.read_csv(outputpath,skipinitialspace=True )
-
-	# datafile = datafile[datafile["success"]==1]
 
