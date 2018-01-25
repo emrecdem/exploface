@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 import exploface as ef
 
+# This testcase tests for reading in and getting time intervals for
+# different items (confidence, different AUs, etcetera). It does
+# so using the threshold method.
 class TestForGettingActivationTimesWithThreshold(unittest.TestCase):
 
     def get_test_directory(self):
@@ -88,6 +91,33 @@ class TestForGettingActivationTimesWithThreshold(unittest.TestCase):
         self.assertEqual(AU01_r_intervals[0][0], 2)
 
         self.assertEqual(AU01_r_intervals[0][1], 4)
+
+
+# In this test case we will test some smoothing options
+# when getting time intervals for different items. For
+# example we would like to filter out moments where an 
+# AU is detected for only a minutely small time interval.
+# Or when one time interval is broken up by small intervals
+# which we want to smooth out.
+class TestSmoothingActivationTimes(unittest.TestCase):
+
+    def get_test_directory(self):
+        return os.path.dirname(os.path.abspath(__file__))
+
+    def test_smoothing_over_small_time_intervals(self):
+        df = pd.read_csv(os.path.join(self.get_test_directory(), "data", "detect_AU01_r_with_to_smooth_intervals.csv"))
+        AU_intervals = ef.getActivationTimes(df, "AU01_r", 
+                                            smooth_over_time_interval = 0.3, 
+                                            threshold=1, method="threshold")
+
+        # There is one interval from 2.0-4.0 and three small ones at
+        # 0.3, 4.2, 10.7 sec. These last three are all 0.2sec long.
+        # So in the end we must only detect one interval
+        self.assertEqual(len(AU_intervals), 1)
+        # The one interval should be a merger of the 2.0-4.0 and the
+        # 4.2-4.4 one, since the distance  between them is <0.3sec.
+        self.assertEqual(AU_intervals[0][0], 2.0)
+        self.assertEqual(AU_intervals[0][1], 4.4)
 
 if __name__ == '__main__':
     unittest.main()

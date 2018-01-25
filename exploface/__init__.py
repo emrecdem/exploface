@@ -41,9 +41,14 @@ def getActivationTimes(
 					method="threshold",
 					confidence_cut = 0.9,
                     inverse_threshold = False, 
-                    time_threshold=None, 
-                    time_gap_smoothing=None):
+                    smooth_over_time_interval = None
+                    ):
 
+    round_seconds_to_decimals = 2
+
+    # Improve this implementation!
+    time_threshold = smooth_over_time_interval
+    time_gap_smoothing = smooth_over_time_interval
 
     if method == "mean":
         threshold_x_mean = threshold * df[emo_key].mean()
@@ -65,13 +70,13 @@ def getActivationTimes(
         if detected[i]:
             if not start:
                 start = True
-                time_entry.append(df.iloc[i]["timestamp"])
+                time_entry.append(round(df.iloc[i]["timestamp"], round_seconds_to_decimals))
             if i == len(df)-1:
-                time_entry.append(df.iloc[i]["timestamp"])
+                time_entry.append(round(df.iloc[i]["timestamp"], round_seconds_to_decimals))
                 times.append(time_entry)                
         elif start:
             start = False
-            time_entry.append(df.iloc[i-1]["timestamp"])
+            time_entry.append(round(df.iloc[i-1]["timestamp"], round_seconds_to_decimals))
             times.append(time_entry)
             time_entry = []
 
@@ -82,7 +87,7 @@ def getActivationTimes(
         for i in range(len(times)-1):
             t = times[i]
             tp = times[i+1]
-            if (tp[0]-t[1]) < time_gap_smoothing:
+            if round((tp[0]-t[1]),round_seconds_to_decimals) <= time_gap_smoothing:
                 times[i+1] = [t[0], tp[1]]
                 times[i] = []
         new_times = []
@@ -96,7 +101,7 @@ def getActivationTimes(
     if time_threshold:
         new_times = []
         for t in times:
-            if (t[1]-t[0]) > time_threshold:
+            if round((t[1]-t[0]),round_seconds_to_decimals) >= time_threshold:
                 new_times.append(t)
         times = new_times
 
