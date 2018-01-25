@@ -119,5 +119,18 @@ class TestSmoothingActivationTimes(unittest.TestCase):
         self.assertEqual(AU_intervals[0][0], 2.0)
         self.assertEqual(AU_intervals[0][1], 4.4)
 
+    def test_smoothing_over_small_time_intervals_ex2(self):
+        df = pd.read_csv(os.path.join(self.get_test_directory(), "data", "detect_AU01_r_with_to_smooth_intervals_ex2.csv"))
+        AU_intervals = ef.getActivationTimes(df, "AU01_r", 
+                                            smooth_over_time_interval = 0.3, 
+                                            threshold=3, method="threshold")
+
+        self.assertEqual(len(AU_intervals), 2)
+
+        self.assertEqual(AU_intervals[0][0], 1.9)
+        self.assertEqual(AU_intervals[0][1], 3.9)
+        self.assertEqual(AU_intervals[1][0], 14.0)
+        self.assertEqual(AU_intervals[1][1], 18.0)
+
 if __name__ == '__main__':
     unittest.main()

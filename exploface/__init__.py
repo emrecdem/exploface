@@ -35,15 +35,36 @@ def getUnConfidenceTimes(df, confidence_threshold = 0.99):
     return getActivationTimes(df, emo_key="confidence", threshold=confidence_threshold, inverse_threshold=True)
 
 def getActivationTimes(
-					df, 
-					emo_key, 
-					threshold=1, 
-					method="threshold",
-					confidence_cut = 0.9,
+                    df, 
+                    emo_key, 
+                    threshold=1, 
+                    method="threshold",
+                    confidence_cut = 0.9,
                     inverse_threshold = False, 
                     smooth_over_time_interval = None
                     ):
 
+    results = get_feature_summary(df, 
+                                    emo_key, 
+                                    threshold, 
+                                    method,
+                                    confidence_cut,
+                                    inverse_threshold, 
+                                    smooth_over_time_interval
+                                    )
+
+    return results["times"]
+
+def get_feature_summary(
+                        df, 
+                        emo_key, 
+                        threshold=1, 
+                        method="threshold",
+                        confidence_cut = 0.9,
+                        inverse_threshold = False, 
+                        smooth_over_time_interval = None
+                        ):
+    
     round_seconds_to_decimals = 2
 
     # Improve this implementation!
@@ -105,7 +126,19 @@ def getActivationTimes(
                 new_times.append(t)
         times = new_times
 
-    #if confidence_cut:
-        
+    # Some stats on the activation times
+    nr_of_activations = len(times)
+    if nr_of_activations > 0:
+        activation_length = np.array([t[1]-t[0] for t in times])
+        total_activation_length = sum(activation_length)
+        mean_activation_length = np.mean(activation_length)
+        std_deviation_activation_length = np.std(activation_length)
+    else:
+        total_activation_length = 0
+        mean_activation_length = 0
+        std_deviation_activation_length = 0
 
-    return times
+    return {"times": times, 
+            "total_activation_length":total_activation_length,
+            "mean_activation_length":mean_activation_length, 
+            "std_deviation_activation_length":std_deviation_activation_length}
