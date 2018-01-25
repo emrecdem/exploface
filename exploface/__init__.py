@@ -138,6 +138,9 @@ def get_feature_summary(
         mean_activation_length = 0
         std_deviation_activation_length = 0
 
+    # Some stats on the intensity of the feature
+    
+
     return {"times": times, 
             "total_activation_length":total_activation_length,
             "mean_activation_length":mean_activation_length, 
