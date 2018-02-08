@@ -72,6 +72,7 @@ class TestForGettingActivationTimesWithThreshold(unittest.TestCase):
     # AU01_r is 1 somewhere.
     def test_AU01_r_video_detect_AU01_r_time2_4_confidence0(self):
         df = pd.read_csv(os.path.join(self.get_test_directory(), "data", "detect_AU01_r_time2_4_confidence0.csv"))
+        #print(df)
         AU01_r_intervals = ef.getActivationTimes(df, "AU01_r", threshold=1, method="threshold")
 
         self.assertEqual(len(AU01_r_intervals), 0)
@@ -120,63 +121,74 @@ class TestSmoothingActivationTimes(unittest.TestCase):
         self.assertEqual(AU_intervals[0][1], 4.4)
 
     def test_smoothing_over_small_time_intervals_ex2(self):
-        df = pd.read_csv(os.path.join(self.get_test_directory(), "data", "detect_AU01_r_with_to_smooth_intervals_ex2.csv"))
+        df = pd.read_csv(os.path.join(self.get_test_directory(), "data", 
+            "detect_AU01_r_with_to_smooth_intervals_ex2.csv"))
         AU_intervals = ef.getActivationTimes(df, "AU01_r", 
-                                            smooth_over_time_interval = 0.3, 
+                                            smooth_over_time_interval = 0.5, 
                                             threshold=3, method="threshold")
 
         self.assertEqual(len(AU_intervals), 2)
 
-        self.assertEqual(AU_intervals[0][0], 1.9)
+        self.assertEqual(AU_intervals[0][0], 2.0)
         self.assertEqual(AU_intervals[0][1], 3.9)
         self.assertEqual(AU_intervals[1][0], 14.0)
-        self.assertEqual(AU_intervals[1][1], 18.0)
+        self.assertEqual(AU_intervals[1][1], 18.3)
 
 
 
-# 
+# # 
 class TestExtraStatsOfFeatures(unittest.TestCase):
 
     def get_test_directory(self):
         return os.path.dirname(os.path.abspath(__file__))
 
-    def test_AU01_r_video_detect_AU01_r_time2_4(self):
+    def test_AU01_extrastats_video_time2_4(self):
         df = pd.read_csv(os.path.join(self.get_test_directory(), "data", "detect_AU01_r_time2_4.csv"))
-        AU01_r_results = ef.get_feature_summary(df, "AU01_r", threshold=1, method="threshold")
+        AU01_r_results = ef.get_activation_dataframe(df, feature_detected="AU01_c", feature_intensity="AU01_r", smooth_over_time_interval=0.4)#, threshold=0.8, threshold_method="threshold")
 
-        AU01_r_intervals = AU01_r_results["times"]
+        AU01_r_intervals = list(zip(AU01_r_results["start"], AU01_r_results["end"]))
 
         # Test the intervals just to be sure
         self.assertEqual(len(AU01_r_intervals), 1)
         self.assertEqual(AU01_r_intervals[0][0], 2)
         self.assertEqual(AU01_r_intervals[0][1], 4)
+        
+        self.assertEqual(AU01_r_results["mean_intensity"][0],1)
+        self.assertEqual(AU01_r_results["std_intensity"][0],0)
+        self.assertEqual(AU01_r_results["mean_confidence"][0],1)
 
-        # Now get some stats
-        self.assertEqual(AU01_r_results["total_activation_length"], 2)
-        self.assertEqual(AU01_r_results["mean_activation_length"], 2)
-        self.assertEqual(AU01_r_results["std_deviation_activation_length"], 0)
-
-    def test_AU01_r_video_detect_AU01_r_time2_4(self):
+    def test_AU01_extrastats_video_smoothin_ex2(self):
         df = pd.read_csv(os.path.join(self.get_test_directory(), "data", "detect_AU01_r_with_to_smooth_intervals_ex2.csv"))
-        AU01_r_results = ef.get_feature_summary(df, "AU01_r", 
-                                                smooth_over_time_interval = 0.3, 
-                                                threshold=3, method="threshold")
+        #print(df)
+        AU01_r_results = ef.get_activation_dataframe(df, feature_detected="AU01_c", feature_intensity="AU01_r", smooth_over_time_interval=0.5)#, threshold=1, threshold_method="threshold")
 
-        AU01_r_intervals = AU01_r_results["times"]
+        print(AU01_r_results)
 
-        # Test the intervals just to be sure
-        #self.assertEqual(AU01_r_intervals, 1)
+        AU01_r_intervals = list(zip(AU01_r_results["start"], AU01_r_results["end"]))
+
         self.assertEqual(len(AU01_r_intervals), 2)
 
-        self.assertEqual(AU01_r_intervals[0][0], 1.9)
-        self.assertEqual(AU01_r_intervals[0][1], 3.9)
+        self.assertEqual(AU01_r_intervals[0][0], 2)
+        self.assertEqual(AU01_r_intervals[0][1], 8.2)
         self.assertEqual(AU01_r_intervals[1][0], 14.0)
-        self.assertEqual(AU01_r_intervals[1][1], 18.0)
+        self.assertEqual(AU01_r_intervals[1][1], 18.3)
 
         # Now get some stats
-        self.assertEqual(AU01_r_results["total_activation_length"], 6)
-        self.assertEqual(AU01_r_results["mean_activation_length"], 3)
-        self.assertEqual(AU01_r_results["std_deviation_activation_length"], 1)
+        self.assertEqual(round(AU01_r_results["mean_intensity"][0],3),2.787)
+        self.assertEqual(round(AU01_r_results["std_intensity"][0],3),1.664)
+        self.assertEqual(AU01_r_results["mean_confidence"][0],1)
+
+
+
+# class TestCompareTimeStamps(unittest.TestCase):
+
+#     def get_test_directory(self):
+#         return os.path.dirname(os.path.abspath(__file__))
+
+#     def test_simple_case(self):
+#         self.assertEqual(False, True)
+
+
 
 
 if __name__ == '__main__':
