@@ -1,5 +1,6 @@
 import pandas as pd
 import exploface.extraction
+import numpy as np
 
 def get_time_stamp_format_openface(df, method="discrete",
                                     skip_at_after_sec=10,
@@ -66,7 +67,7 @@ def convert_bamberg_to_timestamp_format(dataframe):
                 
         elif selected_content["Event_Type"][i] == "State point":
             stamps.append([selected_content["Time_Relative_sf"][i], selected_content["Time_Relative_sf"][i]+0.5,\
-                          selected_content["Behavior"][i], 1, 1])
+                          selected_content["Behavior"][i], np.nan, np.nan])
             
             
     # We now put our results in a dataframe

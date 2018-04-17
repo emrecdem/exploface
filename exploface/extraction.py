@@ -110,26 +110,6 @@ def getActivationTimes(
                 new_times.append(t)
         times = new_times
 
-    ##
-    # Here we make a data frame and add the timeslots and other information
-    ##
-    #print(times)
-    #start, end = zip(*times)
-    #df_result = pd.DataFrame({"start": start, "end": end})
-
-    # Some stats on the activation times
-    # nr_of_activations = len(times)
-    # if nr_of_activations > 0:
-    #     activation_length = np.array([t[1]-t[0] for t in times])
-    #     total_activation_length = sum(activation_length)
-    #     mean_activation_length = np.mean(activation_length)
-    #     std_deviation_activation_length = np.std(activation_length)
-    # else:
-    #     total_activation_length = 0
-    #     mean_activation_length = 0
-    #     std_deviation_activation_length = 0
-
-    # Some stats on the intensity of the feature
     return times
 
 
@@ -140,7 +120,9 @@ Now the dataframe needs to contain
 - feature_detected == None: then feature_intensity is used with intensity_threshold to get the times. In
                             this case if intensity_threshold is not given it is assumed to be 1.0
 """
-def get_activation_dataframe(data,feature_intensity, smooth_over_time_interval, feature_detected=None, intensity_threshold=None):#, threshold, threshold_method="threshold"):
+def get_activation_dataframe(data, 
+                            feature_intensity, smooth_over_time_interval, 
+                            feature_detected=None, intensity_threshold=None):
 
     if feature_detected:
         times = getActivationTimes(

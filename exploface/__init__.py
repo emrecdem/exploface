@@ -139,8 +139,13 @@ def write_elan_file_from_stamps(
         times = data_frame[data_frame["au"] == au]
         #print(au, len(times))
         for i in range(len(times)):
+            annotation_name = times.iloc[i]["au"]
+            if "modifier" in times.columns:
+                if times.iloc[i]["modifier"] and not np.isnan(times.iloc[i]["modifier"]):
+                    annotation_name = "I="+str(times.iloc[i]["modifier"])
+
             ed.add_annotation((1000*times.iloc[i]["start"], 1000*times.iloc[i]["end"]), 
-                              times.iloc[i]["au"], tier_name=times.iloc[i]["au"])
+                              annotation_name, tier_name=times.iloc[i]["au"])
         if len(times) == 0:
             ed.add_annotation((0,0.1), 
                               "", au)
