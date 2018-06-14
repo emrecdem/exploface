@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def generateEmotionsFromAU(df):
+def generate_emotions_from_AU(df):
     # AU vary on a scale of 0-5
     df["happy_r"] = (df["AU06_r"]+df["AU12_r"])/(2)
     df["surprise_r"]=(df["AU01_r"]+df["AU02_r"]+df["AU05_r"]+df["AU26_r"])/(4)
@@ -21,19 +21,19 @@ def generateEmotionsFromAU(df):
 
 
 
-def getSuccessTimes(df):
-    return getActivationTimes(df, emo_key="success", method="threshold")
+def get_success_times(df):
+    return get_activation_times(df, emo_key="success", method="threshold")
 
-def getFailTimes(df):
-    return getActivationTimes(df, emo_key="success", threshold= 0, method="threshold", inverse_threshold=True)
+def get_fail_times(df):
+    return get_activation_times(df, emo_key="success", threshold= 0, method="threshold", inverse_threshold=True)
 
-def getConfidenceTimes(df, confidence_threshold = 0.99):
-    return getActivationTimes(df, emo_key="confidence", threshold=confidence_threshold)
+def get_confidence_times(df, confidence_threshold = 0.99):
+    return get_activation_times(df, emo_key="confidence", threshold=confidence_threshold)
 
-def getUnConfidenceTimes(df, confidence_threshold = 0.99):
-    return getActivationTimes(df, emo_key="confidence", threshold=confidence_threshold, inverse_threshold=True)
+def get_unconfidence_times(df, confidence_threshold = 0.99):
+    return get_activation_times(df, emo_key="confidence", threshold=confidence_threshold, inverse_threshold=True)
 
-def getActivationTimes(
+def get_activation_times(
                     df, 
                     emo_key, 
                     threshold=1, 
@@ -125,7 +125,7 @@ def get_activation_dataframe(data,
                             feature_detected=None, intensity_threshold=None):
 
     if feature_detected:
-        times = getActivationTimes(
+        times = get_activation_times(
             data, feature_detected, 
             threshold=1, method="threshold",
             smooth_over_time_interval=smooth_over_time_interval,
@@ -135,7 +135,7 @@ def get_activation_dataframe(data,
         if not intensity_threshold:
             intensity_threshold = 1.0
 
-        times = getActivationTimes(
+        times = get_activation_times(
             data, feature_intensity, 
             threshold=intensity_threshold, method="threshold",
             smooth_over_time_interval=smooth_over_time_interval,
