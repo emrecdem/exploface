@@ -16,7 +16,7 @@ def get_time_stamp_format_openface(df, method="discrete",
     for c in df.columns:
         if "AU" in c and "_c" in c:
 
-            times = exploface.extraction.getActivationTimes(df, emo_key = c, smooth_over_time_interval = smooth_over_time_interval)
+            times = exploface.extraction.get_activation_times(df, emo_key = c, smooth_over_time_interval = smooth_over_time_interval)
 
             for t in times:
                 if t[0] < df["timestamp"].iloc[-1] - skip_at_after_sec:
