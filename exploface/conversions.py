@@ -5,10 +5,21 @@ import numpy as np
 
 
 
-def get_time_stamp_format_openface(df, method="discrete",
-                                    skip_at_after_sec=10,
-                                    smooth_over_time_interval=0.5
+def get_time_stamp_format_openface(df, 
+                                    skip_seconds_at_end= 0,
+                                    intensity_threshold= 0.8,
+                                    time_threshold= 0.3,
+                                    smooth_time_threshold = 0.3,
+                                    uncertainty_threshold= 0.9
                                     ):
+
+
+
+    print("THESE THINGS ARE NOT IMPLEMENTED: get_time_stamp_format_openface")
+    method="discrete"
+    skip_at_after_sec=10,
+    smooth_over_time_interval=0.5
+
     AUs = []
     start_list = []
     end_list = []
@@ -16,10 +27,16 @@ def get_time_stamp_format_openface(df, method="discrete",
     for c in df.columns:
         if "AU" in c and "_c" in c:
 
-            times = exploface.extraction.get_activation_times(df, emo_key = c, smooth_over_time_interval = smooth_over_time_interval)
+            times = exploface.extraction.get_activation_times(df, 
+                emo_key = c, 
+                confidence_cut = uncertainty_threshold,
+                smooth_time_threshold = smooth_time_threshold,
+                time_threshold = time_threshold,
+                #smooth_over_time_interval = smooth_over_time_interval
+                )
 
             for t in times:
-                if t[0] < df["timestamp"].iloc[-1] - skip_at_after_sec:
+                if t[0] < df["timestamp"].iloc[-1] - skip_seconds_at_end:
                     AUs.append(c.split("_")[0])
                     start_list.append(t[0])
                     end_list.append(t[1])

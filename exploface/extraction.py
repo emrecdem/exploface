@@ -1,38 +1,6 @@
 import pandas as pd
 
 
-def generate_emotions_from_AU(df):
-    # AU vary on a scale of 0-5
-    df["happy_r"] = (df["AU06_r"]+df["AU12_r"])/(2)
-    df["surprise_r"]=(df["AU01_r"]+df["AU02_r"]+df["AU05_r"]+df["AU26_r"])/(4)
-    df["sad_r"]=(df["AU01_r"]+df["AU04_r"]+df["AU15_r"])/(3)
-    df["fear_r"]=(df["AU01_r"]+df["AU02_r"]+df["AU04_r"]+df["AU05_r"]+df["AU07_r"]+df["AU20_r"]+df["AU26_r"])/(7)
-    df["anger_r"]=(df["AU04_r"]+df["AU05_r"]+df["AU07_r"]+df["AU23_r"])/(4)
-    df["disgust_r"]=(df["AU09_r"]+df["AU15_r"])/(2)
-
-    df["happy_c"] = (df["AU06_c"]>0) & (df["AU12_c"]>0) #(df["AU06_c"]+df["AU12_c"])/2# (df["AU06_c"]>0 and df["AU12_c"]>0)  # 
-    df["surprise_c"]=(df["AU01_c"]>0) & (df["AU02_c"]>0) & (df["AU05_c"]>0) & (df["AU26_c"]>0) #(df["AU01_c"]+df["AU02_c"]+df["AU05_c"]+df["AU26_c"])/4
-    df["sad_c"]=(df["AU01_c"]>0) & (df["AU04_c"]>0) & (df["AU15_c"]>0)
-    df["fear_c"]=(df["AU01_c"]>0) & (df["AU02_c"]>0) & (df["AU04_c"]>0) & (df["AU05_c"]>0) & (df["AU07_c"]>0) & (df["AU20_c"]>0) & (df["AU26_c"]>0)
-    df["anger_c"]=(df["AU04_c"]>0) & (df["AU05_c"]>0) & (df["AU07_c"]>0) & (df["AU23_c"]>0)
-    df["disgust_c"]=(df["AU09_c"]>0) & (df["AU15_c"]>0)
-
-    return df
-
-
-
-def get_success_times(df):
-    return get_activation_times(df, emo_key="success", method="threshold")
-
-def get_fail_times(df):
-    return get_activation_times(df, emo_key="success", threshold= 0, method="threshold", inverse_threshold=True)
-
-def get_confidence_times(df, confidence_threshold = 0.99):
-    return get_activation_times(df, emo_key="confidence", threshold=confidence_threshold)
-
-def get_unconfidence_times(df, confidence_threshold = 0.99):
-    return get_activation_times(df, emo_key="confidence", threshold=confidence_threshold, inverse_threshold=True)
-
 def get_activation_times(
                     df, 
                     emo_key, 
@@ -40,7 +8,9 @@ def get_activation_times(
                     method="threshold",
                     confidence_cut = 0.9,
                     inverse_threshold = False, 
-                    smooth_over_time_interval = None
+                    smooth_time_threshold = 0.3,
+                    time_threshold = 0.9,
+#                    smooth_over_time_interval = None
                     ):
     # smooth_over_time_interval
     # If active: only after smooth_over_time_interval seconds of not active will detection of the parameter end
@@ -49,8 +19,7 @@ def get_activation_times(
     round_seconds_to_decimals = 2
 
     # Improve this implementation!
-    time_threshold = smooth_over_time_interval
-    time_gap_smoothing = smooth_over_time_interval
+    time_gap_smoothing = smooth_time_threshold
 
     if method == "mean":
         threshold_x_mean = threshold * df[emo_key].mean()
@@ -114,77 +83,115 @@ def get_activation_times(
 
 
 
+#### 
+# OLD STUFF
+####
+
+def generate_emotions_from_AU(df):
+    # AU vary on a scale of 0-5
+    df["happy_r"] = (df["AU06_r"]+df["AU12_r"])/(2)
+    df["surprise_r"]=(df["AU01_r"]+df["AU02_r"]+df["AU05_r"]+df["AU26_r"])/(4)
+    df["sad_r"]=(df["AU01_r"]+df["AU04_r"]+df["AU15_r"])/(3)
+    df["fear_r"]=(df["AU01_r"]+df["AU02_r"]+df["AU04_r"]+df["AU05_r"]+df["AU07_r"]+df["AU20_r"]+df["AU26_r"])/(7)
+    df["anger_r"]=(df["AU04_r"]+df["AU05_r"]+df["AU07_r"]+df["AU23_r"])/(4)
+    df["disgust_r"]=(df["AU09_r"]+df["AU15_r"])/(2)
+
+    df["happy_c"] = (df["AU06_c"]>0) & (df["AU12_c"]>0) #(df["AU06_c"]+df["AU12_c"])/2# (df["AU06_c"]>0 and df["AU12_c"]>0)  # 
+    df["surprise_c"]=(df["AU01_c"]>0) & (df["AU02_c"]>0) & (df["AU05_c"]>0) & (df["AU26_c"]>0) #(df["AU01_c"]+df["AU02_c"]+df["AU05_c"]+df["AU26_c"])/4
+    df["sad_c"]=(df["AU01_c"]>0) & (df["AU04_c"]>0) & (df["AU15_c"]>0)
+    df["fear_c"]=(df["AU01_c"]>0) & (df["AU02_c"]>0) & (df["AU04_c"]>0) & (df["AU05_c"]>0) & (df["AU07_c"]>0) & (df["AU20_c"]>0) & (df["AU26_c"]>0)
+    df["anger_c"]=(df["AU04_c"]>0) & (df["AU05_c"]>0) & (df["AU07_c"]>0) & (df["AU23_c"]>0)
+    df["disgust_c"]=(df["AU09_c"]>0) & (df["AU15_c"]>0)
+
+    return df
+
+
+
+def get_success_times(df):
+    return get_activation_times(df, emo_key="success", method="threshold")
+
+def get_fail_times(df):
+    return get_activation_times(df, emo_key="success", threshold= 0, method="threshold", inverse_threshold=True)
+
+def get_confidence_times(df, confidence_threshold = 0.99):
+    return get_activation_times(df, emo_key="confidence", threshold=confidence_threshold)
+
+def get_unconfidence_times(df, confidence_threshold = 0.99):
+    return get_activation_times(df, emo_key="confidence", threshold=confidence_threshold, inverse_threshold=True)
+
+
 """
 Now the dataframe needs to contain 
 - feature_detected: if this is given, it will be used to select the times at the start of this function.
 - feature_detected == None: then feature_intensity is used with intensity_threshold to get the times. In
                             this case if intensity_threshold is not given it is assumed to be 1.0
 """
-def get_activation_dataframe(data, 
-                            feature_intensity, smooth_over_time_interval, 
-                            feature_detected=None, intensity_threshold=None):
 
-    if feature_detected:
-        times = get_activation_times(
-            data, feature_detected, 
-            threshold=1, method="threshold",
-            smooth_over_time_interval=smooth_over_time_interval,
-            inverse_threshold = False,
-            )
-    else:
-        if not intensity_threshold:
-            intensity_threshold = 1.0
+# def get_activation_dataframe(data, 
+#                             feature_intensity, smooth_over_time_interval, 
+#                             feature_detected=None, intensity_threshold=None):
 
-        times = get_activation_times(
-            data, feature_intensity, 
-            threshold=intensity_threshold, method="threshold",
-            smooth_over_time_interval=smooth_over_time_interval,
-            inverse_threshold = False,
-            )
+#     if feature_detected:
+#         times = get_activation_times(
+#             data, feature_detected, 
+#             threshold=1, method="threshold",
+#             smooth_over_time_interval=smooth_over_time_interval,
+#             inverse_threshold = False,
+#             )
+#     else:
+#         if not intensity_threshold:
+#             intensity_threshold = 1.0
 
-    if len(times) > 0:
-        start, end = list(zip(*times))
-    else:
-        start, end = [], []
+#         times = get_activation_times(
+#             data, feature_intensity, 
+#             threshold=intensity_threshold, method="threshold",
+#             smooth_over_time_interval=smooth_over_time_interval,
+#             inverse_threshold = False,
+#             )
 
-    df_result = pd.DataFrame({"start": start, "end": end})
+#     if len(times) > 0:
+#         start, end = list(zip(*times))
+#     else:
+#         start, end = [], []
 
-    mean = []
-    std = []
-    mean_confidence = []
-    start = []
-    end = []
-    for i in range(len(df_result)):
-        indices = (data["timestamp"]>df_result["start"][i]) & (data["timestamp"]<df_result["end"][i])
+#     df_result = pd.DataFrame({"start": start, "end": end})
 
-        i_mean = data[indices][feature_intensity].mean()
-        i_std = data[indices][feature_intensity].std()
-        i_mean_conf = data[indices]["confidence"].mean()
+#     mean = []
+#     std = []
+#     mean_confidence = []
+#     start = []
+#     end = []
+#     for i in range(len(df_result)):
+#         indices = (data["timestamp"]>df_result["start"][i]) & (data["timestamp"]<df_result["end"][i])
+
+#         i_mean = data[indices][feature_intensity].mean()
+#         i_std = data[indices][feature_intensity].std()
+#         i_mean_conf = data[indices]["confidence"].mean()
         
-        # If feature_detected is given together with intensity_threshold, then 
-        # you pick out the times that have an mean intensity>intensity_threshold
-        if intensity_threshold and feature_detected:
-            if i_mean >= intensity_threshold:
-                start.append(df_result["start"][i])
-                end.append(df_result["end"][i])
-                mean.append(i_mean)
-                std.append(i_std)
-                mean_confidence.append(i_mean_conf)
-        # If no intensity_threshold and feature_detected is given. The times will 
-        # come from feature_intensity and that is what you want.
-        else:
-            start.append(df_result["start"][i])
-            end.append(df_result["end"][i])
-            mean.append(i_mean)
-            std.append(i_std)
-            mean_confidence.append(i_mean_conf)
+#         # If feature_detected is given together with intensity_threshold, then 
+#         # you pick out the times that have an mean intensity>intensity_threshold
+#         if intensity_threshold and feature_detected:
+#             if i_mean >= intensity_threshold:
+#                 start.append(df_result["start"][i])
+#                 end.append(df_result["end"][i])
+#                 mean.append(i_mean)
+#                 std.append(i_std)
+#                 mean_confidence.append(i_mean_conf)
+#         # If no intensity_threshold and feature_detected is given. The times will 
+#         # come from feature_intensity and that is what you want.
+#         else:
+#             start.append(df_result["start"][i])
+#             end.append(df_result["end"][i])
+#             mean.append(i_mean)
+#             std.append(i_std)
+#             mean_confidence.append(i_mean_conf)
 
-    df_result = pd.DataFrame()#{"start": start, "end": end})
-    df_result["start"] = start
-    df_result["end"] = end
-    df_result["mean_intensity"] = mean
-    df_result["std_intensity"] = std
-    df_result["mean_confidence"] = mean_confidence
-    df_result["duration"] = df_result["end"] - df_result["start"]
+#     df_result = pd.DataFrame()#{"start": start, "end": end})
+#     df_result["start"] = start
+#     df_result["end"] = end
+#     df_result["mean_intensity"] = mean
+#     df_result["std_intensity"] = std
+#     df_result["mean_confidence"] = mean_confidence
+#     df_result["duration"] = df_result["end"] - df_result["start"]
         
-    return df_result
+#     return df_result
