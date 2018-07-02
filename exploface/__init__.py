@@ -28,7 +28,7 @@ def write_elan_file(
     directory = os.path.dirname(csv_filepath)
     
     datafile = pd.read_csv(csv_filepath,skipinitialspace=True )
-    datafile = exploface.extraction.generateEmotionsFromAU(datafile)
+    #datafile = exploface.extraction.generate_emotions_from_AU(datafile)
     
     # These will be the column names of the action units and the emotions
     columns = [c for c in datafile.columns if "_c" in c]#[c for c in datafile.columns if "AU" in c and "_c" in c]
@@ -57,7 +57,7 @@ def write_elan_file(
     ed = elanwriter.ElanDoc(rel_video_path)
 
     # First print a tier to indicate the confidence of openface
-    times = exploface.extraction.getActivationTimes(datafile, "confidence", threshold=0.95, method=threshold_method, 
+    times = exploface.extraction.get_activation_times(datafile, "confidence", threshold=0.95, method=threshold_method, 
                                         smooth_over_time_interval=smooth_over_time_interval,
                                         inverse_threshold = True)
     for i in range(len(times)):
@@ -67,7 +67,7 @@ def write_elan_file(
         
     # Now walk over all the action units & emotions and add them to the elan file
     for c in columns:
-        times = exploface.extraction.getActivationTimes(datafile, c, threshold=0.95, method=threshold_method, 
+        times = exploface.extraction.get_activation_times(datafile, c, threshold=0.95, method=threshold_method, 
                                            smooth_over_time_interval=smooth_over_time_interval)
         
         c_intensity = c.replace("_c", "_r")
@@ -95,9 +95,12 @@ def write_elan_file(
             run_status.append("No intensity for "+c)
     
     # Write out the elan file
+    print("Output???")
     if output_directory:
+        print("1")
         ed.write(os.path.join(output_directory, filename_no_ext+".eaf"))
     else:
+        print("2",os.path.join(directory, filename_no_ext+".eaf"))
         ed.write(os.path.join(directory, filename_no_ext+".eaf"))
 
     return run_status
