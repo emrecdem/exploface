@@ -11,7 +11,7 @@ import exploface.extraction
 import exploface.analysis
 
 
-def get_info(csv_path):
+def get_info(csv_path, max_len_col_names=10):
     """
     Returns some basic information on the openface
     file.
@@ -19,7 +19,10 @@ def get_info(csv_path):
     """
     info = {}
     df = pd.read_csv(csv_path,skipinitialspace=True)
-    cols = set(df.columns)
+    cols = list(set(df.columns))
+    if len(cols) >= max_len_col_names:
+        cols = cols[0:max_len_col_names]+["..."]
+
     info.update({"column_names": cols})
     info.update({"number_of_columns": len(cols)})
     info.update({"duration": \
@@ -30,6 +33,7 @@ def get_info(csv_path):
     return info
 
 def get_statistics( csv_path,
+                    round_to = 2,
                     column_selection = None,
                     skip_seconds_at_end=0,
                     intensity_threshold=0.8,
@@ -65,13 +69,34 @@ def get_statistics( csv_path,
         stats.update( \
             {au: {\
                 "nr_detections": nr_detections, \
-                "average_length_detection": average_length_detection, \
-                "std_average_length_detection": std_average_length_detection\
+                "average_length_detection": round(average_length_detection,round_to), \
+                "std_average_length_detection": round(std_average_length_detection, round_to)\
                 }
             })
         
     return stats
 
+
+def get_time_stamp(csv_path, 
+                    output_path=None,
+                    video_path=None,
+                    column_selection = None,
+                    skip_seconds_at_end=0,
+                    intensity_threshold=0.8,
+                    time_threshold=0.1,
+                    smooth_time_threshold = 0.1,
+                    uncertainty_threshold=0.9
+                    ):
+    df = pd.read_csv(csv_path,skipinitialspace=True )
+
+    df_timestamps = get_time_stamp_format_openface(df,
+                                    skip_seconds_at_end= skip_seconds_at_end,
+                                    intensity_threshold= intensity_threshold,
+                                    time_threshold= time_threshold,
+                                    smooth_time_threshold = smooth_time_threshold,
+                                    uncertainty_threshold= uncertainty_threshold,
+                                    )
+    return df_timestamps
 
 def write_elan_file(csv_path, 
                     output_path=None,
@@ -87,19 +112,17 @@ def write_elan_file(csv_path,
     action_unit_selection: list of AU strings. Or string containing "continuous" or "discrete"
 
     """
-    ##
-    # Get the timestamps
-    ##
-    df = pd.read_csv(csv_path,skipinitialspace=True )
+    df_timestamps = get_time_stamp(csv_path, 
+                    output_path=output_path,
+                    video_path=video_path,
+                    column_selection = column_selection,
+                    skip_seconds_at_end=skip_seconds_at_end,
+                    intensity_threshold=intensity_threshold,
+                    time_threshold=time_threshold,
+                    smooth_time_threshold = smooth_time_threshold,
+                    uncertainty_threshold=uncertainty_threshold
+                    )
 
-    df_timestamps = get_time_stamp_format_openface(df,
-                                    skip_seconds_at_end= skip_seconds_at_end,
-                                    intensity_threshold= intensity_threshold,
-                                    time_threshold= time_threshold,
-                                    smooth_time_threshold = smooth_time_threshold,
-                                    uncertainty_threshold= uncertainty_threshold,
-                                    )
-    
     if not column_selection:
         column_selection = set(df_timestamps["au"])
 
@@ -111,6 +134,9 @@ def write_elan_file(csv_path,
         output_filename = os.path.basename(output_path)
         video_dir = os.path.dirname(video_path)
         video_filename = os.path.basename(video_path)
+
+        if video_dir == "":
+            video_dir = "."
 
         if os.path.isfile(video_path):
             rel_video_path = os.path.join( os.path.relpath(video_dir, output_directory), video_filename )

@@ -15,7 +15,7 @@ def get_time_stamp_format_openface(df,
 
 
 
-    print("THESE THINGS ARE NOT IMPLEMENTED: get_time_stamp_format_openface")
+    #print("THESE THINGS ARE NOT IMPLEMENTED: get_time_stamp_format_openface")
     method="discrete"
     skip_at_after_sec=10,
     smooth_over_time_interval=0.5
