@@ -19,11 +19,13 @@ def get_info(csv_path):
     """
     info = {}
     df = pd.read_csv(csv_path,skipinitialspace=True)
-    info.update({"columns": set(df.columns)})
-    info.update({"length (sec)": \
-        str(df["timestamp"][len(df["timestamp"])-1]-df["timestamp"][0])})
-    info.update({"time resolution (sec)": \
-        str(df["timestamp"][1] - df["timestamp"][0])})
+    cols = set(df.columns)
+    info.update({"column_names": cols})
+    info.update({"number_of_columns": len(cols)})
+    info.update({"duration": \
+        df["timestamp"][len(df["timestamp"])-1]-df["timestamp"][0]})
+    info.update({"time_resolution": \
+        df["timestamp"][1] - df["timestamp"][0]})
 
     return info
 
@@ -53,9 +55,11 @@ def get_statistics( csv_path,
     for au in aus:
         stamps = df_timestamps[df_timestamps["au"]==au]
         nr_detections = len(stamps)
-        stamps["duration"] = stamps["end"]-stamps["start"]
-        average_length_detection = stamps["duration"].mean()
-        std_average_length_detection = stamps["duration"].std()
+        duration = stamps["end"]-stamps["start"]
+
+        average_length_detection = duration.mean() #stamps["duration"].mean()
+        std_average_length_detection = duration.std()#stamps["duration"].std()
+
         stats.update( \
             {au: {\
                 "nr_detections": nr_detections, \
@@ -68,8 +72,8 @@ def get_statistics( csv_path,
 
 
 def write_elan_file(csv_path, 
-                    output_path,
-                    video_path,
+                    output_path=None,
+                    video_path=None,
                     column_selection = None,
                     skip_seconds_at_end=0,
                     intensity_threshold=0.8,
@@ -81,21 +85,6 @@ def write_elan_file(csv_path,
     action_unit_selection: list of AU strings. Or string containing "continuous" or "discrete"
 
     """
-
-    ##
-    # Fix the paths and read in the csv
-    ##
-    output_directory = os.path.dirname(output_path)
-    output_filename = os.path.basename(output_path)
-    video_dir = os.path.dirname(video_path)
-    video_filename = os.path.basename(video_path)
-
-    if os.path.isfile(video_path):
-        rel_video_path = os.path.join( os.path.relpath(video_dir, output_directory), video_filename )
-    else:
-        warnings.warn("No video file found for the elan file. Video file: {}".format(video_path))
-        rel_video_path = "video_not_found"
-
     ##
     # Get the timestamps
     ##
@@ -115,27 +104,39 @@ def write_elan_file(csv_path,
     ##
     # Make the Elan file
     ##
-    ed = elanwriter.ElanDoc(rel_video_path)
-    
-    ##
-    # Start looping over the AUs
-    for au in column_selection:
+    if output_path:
+        output_directory = os.path.dirname(output_path)
+        output_filename = os.path.basename(output_path)
+        video_dir = os.path.dirname(video_path)
+        video_filename = os.path.basename(video_path)
+
+        if os.path.isfile(video_path):
+            rel_video_path = os.path.join( os.path.relpath(video_dir, output_directory), video_filename )
+        else:
+            #warnings.warn("No video file found for the elan file. Video file: {}".format(video_path))
+            rel_video_path = "video_not_found"
+
+        ed = elanwriter.ElanDoc(rel_video_path)
         
-        times = df_timestamps[df_timestamps["au"] == au]
-        #print(au, len(times))
-        for i in range(len(times)):
-            annotation_name = times.iloc[i]["au"]
-            if "modifier" in times.columns:
-                if times.iloc[i]["modifier"] and not np.isnan(times.iloc[i]["modifier"]):
-                    annotation_name = "I="+str(times.iloc[i]["modifier"])
+        ##
+        # Start looping over the AUs
+        for au in column_selection:
+            
+            times = df_timestamps[df_timestamps["au"] == au]
+            #print(au, len(times))
+            for i in range(len(times)):
+                annotation_name = times.iloc[i]["au"]
+                if "modifier" in times.columns:
+                    if times.iloc[i]["modifier"] and not np.isnan(times.iloc[i]["modifier"]):
+                        annotation_name = "I="+str(times.iloc[i]["modifier"])
 
-            ed.add_annotation((1000*times.iloc[i]["start"], 1000*times.iloc[i]["end"]), 
-                              annotation_name, tier_name=times.iloc[i]["au"])
-        if len(times) == 0:
-            ed.add_annotation((0,0.1), 
-                              "", au)
+                ed.add_annotation((1000*times.iloc[i]["start"], 1000*times.iloc[i]["end"]), 
+                                  annotation_name, tier_name=times.iloc[i]["au"])
+            if len(times) == 0:
+                ed.add_annotation((0,0.1), 
+                                  "", au)
 
-    ed.write(output_path)
+        ed.write(output_path)
 
     return df_timestamps
 
