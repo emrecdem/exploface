@@ -28,7 +28,8 @@ def get_time_stamp_format_openface(df,
         if "AU" in c and "_c" in c:
 
             times = exploface.extraction.get_activation_times(df, 
-                emo_key = c, 
+                emo_key = c,
+                intensity_threshold = intensity_threshold,\
                 confidence_cut = uncertainty_threshold,
                 smooth_time_threshold = smooth_time_threshold,
                 time_threshold = time_threshold,

@@ -49,10 +49,12 @@ def get_statistics( csv_path,
                                     smooth_time_threshold = smooth_time_threshold,
                                     uncertainty_threshold= uncertainty_threshold,
                                     )
+    if not column_selection:
+        column_selection = set(df_timestamps["au"])
 
-    aus = set(df_timestamps["au"])
+    #aus = set(df_timestamps["au"])
     stats = {}
-    for au in aus:
+    for au in column_selection:
         stamps = df_timestamps[df_timestamps["au"]==au]
         nr_detections = len(stamps)
         duration = stamps["end"]-stamps["start"]
