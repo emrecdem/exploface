@@ -32,6 +32,10 @@ def get_info(csv_path, max_len_col_names=10):
 
     return info
 
+"""
+Return some statistics of the openface file.
+...
+"""
 def get_statistics( csv_path,
                     round_to = 2,
                     column_selection = None,
@@ -41,10 +45,6 @@ def get_statistics( csv_path,
                     smooth_time_threshold = 0.1,
                     uncertainty_threshold=0.9,
                     ):
-    """
-    Return some statistics of the openface file.
-    ...
-    """
     df = pd.read_csv(csv_path,skipinitialspace=True)
     df_timestamps = get_time_stamp_format_openface(df,
                                     skip_seconds_at_end= skip_seconds_at_end,
