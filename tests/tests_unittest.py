@@ -13,7 +13,7 @@ class TestFunctions(unittest.TestCase):
     def test_info_function(self):
         file_to_read = os.path.join(self.get_test_directory(), "data", "multiple_active_au.csv")
         
-        info_dict = ef.get_info(file_to_read)
+        info_dict = ef.get_info(file_to_read, max_len_col_names=50)
 
         self.assertEqual(info_dict["number_of_columns"], 40)
         self.assertEqual(info_dict["duration"], 19.9)
@@ -23,7 +23,7 @@ class TestFunctions(unittest.TestCase):
     def test_statistics_function(self):
         file_to_read = os.path.join(self.get_test_directory(), "data", "multiple_active_au_2.csv")
         
-        stats_dict = ef.get_statistics(file_to_read)
+        stats_dict = ef.get_statistics(file_to_read, round_to=4)
 
         for au in ['AU01', 'AU02', 'AU23']:
             self.assertEqual(stats_dict[au]["average_length_detection"], 2.5)
