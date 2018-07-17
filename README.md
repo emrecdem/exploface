@@ -17,4 +17,4 @@ Test the installation by starting the python environment (type python in your co
 
 ## Tutorials
 In the directory TUTORIALS you find tutorials on how to use exploface. 
-* Tutorial 1: https://github.com/emrecdem/exploface/TUTORIALS/tutorial1.ipynb
+* Tutorial 1: https://github.com/emrecdem/exploface/blob/master/TUTORIALS/tutorial1.ipynb
