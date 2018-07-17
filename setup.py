@@ -10,14 +10,7 @@ setup(name='exploface',
       version='0.1',
       description='',
       long_description=readme(),
-      # classifiers=[
-      #   'Development Status :: under developement',
-      #   'License :: nothing yet',
-      #   'Programming Language :: Python :: 2.7',
-      #   'Topic :: astronomical :: calculations :: minerals',
-      # ],
       keywords='',
-      #url='https://github.com/bldevries/opacity_calculator',
       author='B.L. de Vries',
       author_email='',
       license='',
@@ -25,9 +18,9 @@ setup(name='exploface',
       # package_data={
       #     'write_elan_eaf_files': ['main.py'],
       # },
-      # install_requires=[
-      #     'markdown',
-      # ],
+      install_requires=[
+          'elanwriter',
+      ],
       # test_suite='nose.collector',
       # tests_require=['nose', 'nose-cover3'],
       # entry_points={
