@@ -1,7 +1,6 @@
 # exploface
 
-Author: B.L. de Vries
-Licence: add it!!
+Author: B.L. de Vries (Netherlands eScience Center)
 
 ## Introducion
 Exploface is a simple python package to work with the output of openface. Openface is a software to analyse faces in images and videos. Please see the website of the authors for more information on openface: https://github.com/TadasBaltrusaitis/OpenFace/wiki
