@@ -10,7 +10,6 @@ import exploface.conversions
 import exploface.extraction
 import exploface.analysis
 
-
 def get_info(csv_path, max_len_col_names=10):
     """
     Returns some basic information on the openface file.
