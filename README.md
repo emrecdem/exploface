@@ -1,6 +1,6 @@
 # exploface
 
-Author:
+Author: B.L. de Vries
 Licence: add it!!
 
 ## Introducion
