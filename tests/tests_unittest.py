@@ -23,12 +23,12 @@ class TestFunctions(unittest.TestCase):
     def test_statistics_function(self):
         file_to_read = os.path.join(self.get_test_directory(), "data", "multiple_active_au_2.csv")
         
-        stats_dict = ef.get_statistics(file_to_read, round_to=4)
+        stats_df = ef.get_statistics(file_to_read, round_to=4)
 
         for au in ['AU01', 'AU02', 'AU23']:
-            self.assertEqual(stats_dict[au]["average_length_detection"], 2.5)
-            self.assertEqual(stats_dict[au]["nr_detections"], 2)
-            self.assertEqual(round(stats_dict[au]["std_average_length_detection"],4), round(0.7071067811865476,4))
+            self.assertEqual(round(stats_df.loc[au, "average_length_detection"], 4), 2.5)
+            self.assertEqual(round(stats_df.loc[au, "nr_detections"],4), 2)
+            self.assertEqual(round(stats_df.loc[au, "std_average_length_detection"], 4), round(0.7071067811865476,4))
 
     ##
     def test_write_elan_function(self):
@@ -45,11 +45,11 @@ class TestFunctions(unittest.TestCase):
     def test_column_selection(self):
         file_to_read = os.path.join(self.get_test_directory(), "data", "multiple_active_au_2.csv")
         #df = ef.write_elan_file(file_to_read)
-        stats_dict = ef.get_statistics(file_to_read, column_selection=["AU23"])
+        stats_df = ef.get_statistics(file_to_read, column_selection=["AU23"])
 
-        self.assertEqual('AU23' in list(stats_dict.keys()), True )
-        self.assertEqual('AU01' in list(stats_dict.keys()), False )
-        self.assertEqual('AU02' in list(stats_dict.keys()), False )
+        self.assertEqual('AU23' in stats_df.index, True )
+        self.assertEqual('AU01' in stats_df.index, False )
+        self.assertEqual('AU02' in stats_df.index, False )
 
     ##
     def test_skip_seconds_at_end(self):

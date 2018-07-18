@@ -19,11 +19,12 @@ def get_info(csv_path, max_len_col_names=10):
     info = {}
     df = pd.read_csv(csv_path,skipinitialspace=True)
     cols = list(set(df.columns))
-    if len(cols) >= max_len_col_names:
+    nr_of_cols = len(cols)
+    if nr_of_cols >= max_len_col_names:
         cols = cols[0:max_len_col_names]+["..."]
 
     info.update({"column_names": cols})
-    info.update({"number_of_columns": len(cols)})
+    info.update({"number_of_columns": nr_of_cols})
     info.update({"duration": \
         df["timestamp"][len(df["timestamp"])-1]-df["timestamp"][0]})
     info.update({"time_resolution": \
@@ -59,6 +60,10 @@ def get_statistics( csv_path,
         column_selection = set(df_timestamps["au"])
 
     stats = {}
+    list_nr_detections = []
+    ave_length = []
+    std_ave_length = []
+    au_dataframe = []
     for au in column_selection:
         stamps = df_timestamps[df_timestamps["au"]==au]
         nr_detections = len(stamps)
@@ -67,6 +72,10 @@ def get_statistics( csv_path,
         average_length_detection = duration.mean() #stamps["duration"].mean()
         std_average_length_detection = duration.std()#stamps["duration"].std()
 
+        au_dataframe.append(au)
+        list_nr_detections.append(nr_detections)
+        ave_length.append(average_length_detection)
+        std_ave_length.append(std_average_length_detection)
         stats.update( \
             {au: {\
                 "nr_detections": nr_detections, \
@@ -74,8 +83,12 @@ def get_statistics( csv_path,
                 "std_average_length_detection": round(std_average_length_detection, round_to)\
                 }
             })
-        
-    return stats
+    df_res = pd.DataFrame({\
+                "nr_detections":pd.Series(list_nr_detections, index=au_dataframe),\
+                "average_length_detection":pd.Series(average_length_detection, index=au_dataframe),\
+                "std_average_length_detection":pd.Series(std_average_length_detection, index=au_dataframe),\
+                })
+    return df_res.sort_index() #stats
 
 
 def get_time_stamp(csv_path, 
