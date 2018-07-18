@@ -56,39 +56,38 @@ def get_statistics( csv_path,
                                     smooth_time_threshold = smooth_time_threshold,
                                     uncertainty_threshold= uncertainty_threshold,
                                     )
+
     if not column_selection:
         column_selection = set(df_timestamps["au"])
 
-    stats = {}
     list_nr_detections = []
     ave_length = []
     std_ave_length = []
     au_dataframe = []
     for au in column_selection:
-        stamps = df_timestamps[df_timestamps["au"]==au]
-        nr_detections = len(stamps)
-        duration = stamps["end"]-stamps["start"]
+        if au in list(df_timestamps["au"]):
+            stamps = df_timestamps[df_timestamps["au"]==au]
+            nr_detections = len(stamps)
+            duration = stamps["end"]-stamps["start"]
 
-        average_length_detection = duration.mean() #stamps["duration"].mean()
-        std_average_length_detection = duration.std()#stamps["duration"].std()
+            average_length_detection = duration.mean()
+            std_average_length_detection = duration.std()
 
-        au_dataframe.append(au)
-        list_nr_detections.append(nr_detections)
-        ave_length.append(average_length_detection)
-        std_ave_length.append(std_average_length_detection)
-        stats.update( \
-            {au: {\
-                "nr_detections": nr_detections, \
-                "average_length_detection": round(average_length_detection,round_to), \
-                "std_average_length_detection": round(std_average_length_detection, round_to)\
-                }
-            })
-    df_res = pd.DataFrame({\
-                "nr_detections":pd.Series(list_nr_detections, index=au_dataframe),\
-                "average_length_detection":pd.Series(average_length_detection, index=au_dataframe),\
-                "std_average_length_detection":pd.Series(std_average_length_detection, index=au_dataframe),\
-                })
-    return df_res.sort_index() #stats
+            au_dataframe.append(au)
+            list_nr_detections.append(nr_detections)
+            ave_length.append(average_length_detection)
+            std_ave_length.append(std_average_length_detection)
+
+    if len(list_nr_detections)>0:
+        df_res = pd.DataFrame({\
+                    "nr_detections":pd.Series(list_nr_detections, index=au_dataframe),\
+                    "average_length_detection":pd.Series(average_length_detection, index=au_dataframe),\
+                    "std_average_length_detection":pd.Series(std_average_length_detection, index=au_dataframe),\
+                    })
+    else:
+        df_res = pd.DataFrame()
+
+    return df_res.sort_index()
 
 
 def get_time_stamp(csv_path, 

@@ -51,6 +51,10 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual('AU01' in stats_df.index, False )
         self.assertEqual('AU02' in stats_df.index, False )
 
+        stats_df = ef.get_statistics(file_to_read, column_selection=["niks"])
+
+        self.assertEqual(len(stats_df), 0 )
+
     ##
     def test_skip_seconds_at_end(self):
         file_to_read = os.path.join(self.get_test_directory(), "data", \
