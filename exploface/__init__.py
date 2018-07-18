@@ -5,7 +5,6 @@ import pathlib
 import pandas as pd
 import warnings
 
-from exploface.conversions import get_time_stamp_format_openface
 import exploface.conversions
 import exploface.extraction
 import exploface.analysis
@@ -48,8 +47,9 @@ def get_statistics( csv_path,
     round_to: rounds the numbers to those amount of decimals.
     Other parameters see write_elan_file()
     """
-    df = pd.read_csv(csv_path,skipinitialspace=True)
-    df_timestamps = get_time_stamp_format_openface(df,
+    #df = pd.read_csv(csv_path,skipinitialspace=True)
+    #df_timestamps = get_time_stamp_format_openface(df,
+    df_detections = get_detections(csv_path,
                                     skip_seconds_at_end= skip_seconds_at_end,
                                     intensity_threshold= intensity_threshold,
                                     time_threshold= time_threshold,
@@ -58,17 +58,17 @@ def get_statistics( csv_path,
                                     )
 
     if not column_selection:
-        column_selection = set(df_timestamps["au"])
+        column_selection = set(df_detections["au"])
 
     list_nr_detections = []
     ave_length = []
     std_ave_length = []
     au_dataframe = []
     for au in column_selection:
-        if au in list(df_timestamps["au"]):
-            stamps = df_timestamps[df_timestamps["au"]==au]
-            nr_detections = len(stamps)
-            duration = stamps["end"]-stamps["start"]
+        if au in list(df_detections["au"]):
+            detections = df_detections[df_detections["au"]==au]
+            nr_detections = len(detections)
+            duration = detections["end"]-detections["start"]
 
             average_length_detection = duration.mean()
             std_average_length_detection = duration.std()
@@ -89,8 +89,8 @@ def get_statistics( csv_path,
 
     return df_res.sort_index()
 
-
-def get_time_stamp(csv_path, 
+ 
+def get_detections(csv_path, 
                     skip_seconds_at_end=0,
                     intensity_threshold=0.8,
                     time_threshold=0.1,
@@ -107,14 +107,28 @@ def get_time_stamp(csv_path,
     """
     df = pd.read_csv(csv_path,skipinitialspace=True )
 
-    df_timestamps = get_time_stamp_format_openface(df,
-                                    skip_seconds_at_end= skip_seconds_at_end,
-                                    intensity_threshold= intensity_threshold,
-                                    time_threshold= time_threshold,
-                                    smooth_time_threshold = smooth_time_threshold,
-                                    uncertainty_threshold= uncertainty_threshold,
-                                    )
-    return df_timestamps
+    AUs = []
+    start_list = []
+    end_list = []
+    for c in df.columns:
+        if "AU" in c and "_c" in c:
+
+            times = extraction.get_activation_times(df, 
+                emo_key = c,
+                intensity_threshold = intensity_threshold,\
+                confidence_cut = uncertainty_threshold,
+                smooth_time_threshold = smooth_time_threshold,
+                time_threshold = time_threshold,
+                )
+
+            for t in times:
+                if t[0] < df["timestamp"].iloc[-1] - skip_seconds_at_end:
+                    AUs.append(c.split("_")[0])
+                    start_list.append(t[0])
+                    end_list.append(t[1])
+
+    return pd.DataFrame({"start": start_list, "end":end_list, "au": AUs})
+
 
 def write_elan_file(csv_path, 
                     output_path=None,
@@ -139,7 +153,7 @@ def write_elan_file(csv_path,
     smooth_time_threshold: 
     uncertainty_threshold: 
     """
-    df_timestamps = get_time_stamp(csv_path, 
+    df_detections = get_detections(csv_path, 
                     skip_seconds_at_end=skip_seconds_at_end,
                     intensity_threshold=intensity_threshold,
                     time_threshold=time_threshold,
@@ -148,7 +162,7 @@ def write_elan_file(csv_path,
                     )
 
     if not column_selection:
-        column_selection = set(df_timestamps["au"])
+        column_selection = set(df_detections["au"])
 
     ##
     # Make the Elan file
@@ -174,8 +188,7 @@ def write_elan_file(csv_path,
         # Start looping over the AUs
         for au in column_selection:
             
-            times = df_timestamps[df_timestamps["au"] == au]
-            #print(au, len(times))
+            times = df_detections[df_detections["au"] == au]
             for i in range(len(times)):
                 annotation_name = times.iloc[i]["au"]
                 if "modifier" in times.columns:
@@ -190,4 +203,4 @@ def write_elan_file(csv_path,
 
         ed.write(output_path)
 
-    return df_timestamps
+    return df_detections
