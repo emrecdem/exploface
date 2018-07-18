@@ -7,7 +7,7 @@ def readme():
 
 
 setuptools.setup(name='exploface',
-      version='0.0.0.dev1.1',
+      version='0.0.0.dev2',
       description='',
       long_description=readme(),
       long_description_content_type='text/markdown',
