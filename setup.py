@@ -7,12 +7,12 @@ def readme():
 
 
 setuptools.setup(name='exploface',
-      version='0.0.0.dev3',
-      description='',
+      version='0.0.0.dev4',
+      description='A tool to analyse and convert data coming from the face analysing software Openface (Cambridge).',
       long_description=readme(),
       long_description_content_type='text/markdown',
       url='https://github.com/emrecdem/exploface',
-      keywords='',
+      keywords='analysis, conversion, facial recoqnition, action units, Openface',
       author='B.L. de Vries',
       author_email='b.devries@esciencecenter.nl',
       classifiers=(

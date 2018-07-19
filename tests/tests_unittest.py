@@ -23,7 +23,7 @@ class TestFunctions(unittest.TestCase):
     def test_statistics_function(self):
         file_to_read = os.path.join(self.get_test_directory(), "data", "multiple_active_au_2.csv")
         
-        stats_df = ef.get_statistics(file_to_read, round_to=4)
+        stats_df = ef.get_statistics(file_to_read)
 
         for au in ['AU01', 'AU02', 'AU23']:
             self.assertEqual(round(stats_df.loc[au, "average_length_detection"], 4), 2.5)

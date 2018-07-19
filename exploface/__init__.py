@@ -17,22 +17,22 @@ def get_info(csv_path, max_len_col_names=10):
     """
     info = {}
     df = pd.read_csv(csv_path,skipinitialspace=True)
-    cols = list(set(df.columns))
+    cols = list(set(df.columns)) # Make a unique list of column names
     nr_of_cols = len(cols)
-    if nr_of_cols >= max_len_col_names:
-        cols = cols[0:max_len_col_names]+["..."]
+    if nr_of_cols >= max_len_col_names: # then dont output all names
+        cols = cols[0:max_len_col_names]+["..."] 
 
     info.update({"column_names": cols})
     info.update({"number_of_columns": nr_of_cols})
     info.update({"duration": \
         df["timestamp"][len(df["timestamp"])-1]-df["timestamp"][0]})
+    # Assuming constant resolution
     info.update({"time_resolution": \
         df["timestamp"][1] - df["timestamp"][0]})
 
     return info
 
 def get_statistics( csv_path,
-                    round_to = 2,
                     column_selection = None,
                     skip_seconds_at_end=0,
                     intensity_threshold=0.8,
@@ -41,14 +41,11 @@ def get_statistics( csv_path,
                     uncertainty_threshold=0.9,
                     ):
     """
-    Return some statistics of the openface file.
-    Return: dict with statistics
+    Returns some statistics of the openface file.
+    Return: DataFrame with statistics
     csv_path: path to the openface csv output file
-    round_to: rounds the numbers to those amount of decimals.
     Other parameters see write_elan_file()
     """
-    #df = pd.read_csv(csv_path,skipinitialspace=True)
-    #df_timestamps = get_time_stamp_format_openface(df,
     df_detections = get_detections(csv_path,
                                     skip_seconds_at_end= skip_seconds_at_end,
                                     intensity_threshold= intensity_threshold,
@@ -81,8 +78,8 @@ def get_statistics( csv_path,
     if len(list_nr_detections)>0:
         df_res = pd.DataFrame({\
                     "nr_detections":pd.Series(list_nr_detections, index=au_dataframe),\
-                    "average_length_detection":pd.Series(average_length_detection, index=au_dataframe),\
-                    "std_average_length_detection":pd.Series(std_average_length_detection, index=au_dataframe),\
+                    "average_length_detection":pd.Series(ave_length, index=au_dataframe),\
+                    "std_average_length_detection":pd.Series(std_ave_length, index=au_dataframe),\
                     })
     else:
         df_res = pd.DataFrame()
