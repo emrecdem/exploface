@@ -9,6 +9,8 @@ import exploface.conversions
 import exploface.extraction
 import exploface.analysis
 
+__version__ = "0.0.0.dev4"
+
 def get_info(csv_path, max_len_col_names=10):
     """
     Returns some basic information on the openface file.
