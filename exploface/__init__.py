@@ -9,7 +9,7 @@ import exploface.conversions
 import exploface.extraction
 import exploface.analysis
 
-__version__ = "0.0.0.dev4"
+__version__ = "0.0.0.dev5"
 
 def get_info(csv_path, max_len_col_names=10):
     """
