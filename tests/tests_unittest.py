@@ -5,6 +5,78 @@ import pandas as pd
 import exploface as ef
 
 
+class TestFunctionsAnalysis(unittest.TestCase):
+    def get_test_directory(self):
+        return os.path.dirname(os.path.abspath(__file__))
+
+    def test_compare_detection_tables(self):
+        file_to_read_1 = os.path.join(self.get_test_directory(), "data", "multiple_active_au.csv")
+        file_to_read_2 = os.path.join(self.get_test_directory(), "data", "multiple_active_au.csv")
+
+        det_df_1 = ef.get_detections(file_to_read_1, 
+                    skip_seconds_at_end=0,
+                    intensity_threshold=0.8,
+                    time_threshold=0.1,
+                    smooth_time_threshold = 0.1,
+                    uncertainty_threshold=0.9
+                    )
+
+        det_df_2 = ef.get_detections(file_to_read_2, 
+                    skip_seconds_at_end=0,
+                    intensity_threshold=0.8,
+                    time_threshold=0.1,
+                    smooth_time_threshold = 0.1,
+                    uncertainty_threshold=0.9
+                    )
+
+        found, total, overlap_start = ef.analysis.find_overlap(det_df_1, det_df_2, "AU01", "AU01", room=1.0)
+
+        self.assertEqual(found, 1)
+        self.assertEqual(total, 1)
+
+    def test_compare_detection_tables_shifts(self):
+        file_to_read_1 = os.path.join(self.get_test_directory(), "data", "multiple_active_au_no_shift.csv")
+        file_to_read_2 = os.path.join(self.get_test_directory(), "data", "multiple_active_au_shift1.csv")
+        file_to_read_3 = os.path.join(self.get_test_directory(), "data", "multiple_active_au_shift2p5.csv")
+        
+        det_df = ef.get_detections(file_to_read_1, 
+                    skip_seconds_at_end=0,
+                    intensity_threshold=0.8,
+                    time_threshold=0.1,
+                    smooth_time_threshold = 0.1,
+                    uncertainty_threshold=0.9
+                    )
+
+        det_df_2 = ef.get_detections(file_to_read_2, 
+                    skip_seconds_at_end=0,
+                    intensity_threshold=0.8,
+                    time_threshold=0.1,
+                    smooth_time_threshold = 0.1,
+                    uncertainty_threshold=0.9
+                    )
+
+        det_df_3 = ef.get_detections(file_to_read_3, 
+                    skip_seconds_at_end=0,
+                    intensity_threshold=0.8,
+                    time_threshold=0.1,
+                    smooth_time_threshold = 0.1,
+                    uncertainty_threshold=0.9
+                    )
+
+
+        found, total, overlap_start = ef.analysis.find_overlap(det_df, det_df_2, "AU01", "AU01", room=0)
+        self.assertEqual(found, 2)
+        self.assertEqual(total, 2)
+
+        found, total, overlap_start = ef.analysis.find_overlap(det_df, det_df_3, "AU01", "AU01", room=0.49)
+        self.assertEqual(found, 0)
+        self.assertEqual(total, 2)
+
+        found, total, overlap_start = ef.analysis.find_overlap(det_df, det_df_3, "AU01", "AU01", room=0.5)
+        self.assertEqual(found, 2)
+        self.assertEqual(total, 2)
+
+
 class TestFunctions(unittest.TestCase):
     def get_test_directory(self):
         return os.path.dirname(os.path.abspath(__file__))

@@ -2,48 +2,97 @@
 import pandas as pd
 import numpy as np
 
-
-def find_overlap(df1, df2, key1, key2, room):
-    
+# Need to implement time sections to skip (like in the Bamberg sample)
+def find_overlap(df1, df2, key1, key2, key_index = "au", room=0):
+    """
+    This version calculates how many detections in df1[key_index] == key1
+    are also found in df2[key_index] == key2.
+    dfx should be a data frame with one detection per row. As generated 
+    by exploface.get_detections.
+    You can specify how precies the detection need to match with the
+    room parameter. The start and end of the detection in df1 is taken as: 
+    [start1-room, end1+room]
+    If df2 has a dectection in that range it is taken as a overlapping detection.
+    """
     found = 0
     overlap = False
     overlap_start = []
-    for i in range(len(df1[df1["au"]==key1])):
-        start_original = df1[df1["au"]==key1].iloc[i]["start"] 
-        end_original = df1[df1["au"]==key1].iloc[i]["end"] 
+    for i in range(len(df1[df1[key_index]==key1])):
+        start1 = df1[df1[key_index]==key1].iloc[i]["start"] 
+        end1 = df1[df1[key_index]==key1].iloc[i]["end"] 
 
-        start = start_original - room
-        end = end_original + room
+        start = start1 - room
+        end = end1 + room
 
         #print(au, "i="+str(i))
 
-        for j in range(len(df2[df2["au"]==key2])):
-            start_human = df2[df2["au"]==key2].iloc[j]["start"]
-            end_human = df2[df2["au"]==key2].iloc[j]["end"]
+        for j in range(len(df2[df2[key_index]==key2])):
+            start2 = df2[df2[key_index]==key2].iloc[j]["start"]
+            end2 = df2[df2[key_index]==key2].iloc[j]["end"]
 
             #print("      ", "j="+str(j))
 
-            if (start_human >= start and start_human <= end) or \
-                (end_human >= start and end_human <= end) or \
-                (start_human < start and end_human > end):
+            if (start2 >= start and start2 <= end) or \
+                (end2 >= start and end2 <= end) or \
+                (start2 < start and end2 > end):
                 overlap = True
-                overlap_start.append(start_original)
-                #print("      ", "overlap found", start, end, start_human, end_human) 
+                overlap_start.append(start1)
                 break
             else:
                 overlap = False
 
         if overlap:
             found += 1
-        #else:
-            #print("      ", "overlap not found", start, end)
+
+    return found, len(df1[df1[key_index]==key1]), overlap_start
+
+#
+#
+#
+def compare_detections(df1, df2, key1, key2, index_key="au", room=0):
+    """
+
+    """
+    found12, total1, list_of_starts12 = find_overlap(df1, df2, key1, key2, key_index = key_index, room=room)
+    found21, total2, list_of_starts21 = find_overlap(df2, df1, key2, key1, key_index = key_index, room=room)
+
+    nr_in_1_also_found_in_2 = found12/total1
+    nr_in_2_also_found_in_1 = found21/total2
+
+    return nr_in_1_also_found_in_2, nr_in_2_also_found_in_1, total1, total2
 
 
 
-            #if overlap: print(au, start_original, end_original, start_human, end_human)
-    #print(found, len(example_file_ts[example_file_ts["au"]==au]))
-    return found, len(df1[df1["au"]==key1]), overlap_start
+def get_quality_openface_au_detection(df, au_nr):
+    """
 
+    """
+    warnings_openface_result = {"always_detect_warning": False}
+    
+    if int(au_nr) < 10: au_nr = "AU0"+str(au_nr)
+    else: au_nr = "AU"+str(au_nr)
+    
+    au_continuous = au_nr+"_r"
+    au_discrete = au_nr+"_c"
+
+    # Calculate average noise
+
+    # Calculate average level discrete
+    #   Some discrete curves are just completely at 1. Probably because the AU seems to be
+    #   active all the time for openface. This could be if people have certain kinds of
+    #   idle faces or if the face orientation mimics an AU (e.g. looking down and lowering brows)
+    if np.mean(df[au_discrete])>0.2:
+        warnings_openface_result["always_detect_warning"] = True
+
+    return warnings_openface_result
+
+
+
+
+
+#   
+#
+#
 def make_comparison_table(openface_files, openface_timestamp_files, human_FACS_files,\
                         output_file_path=None, human_FACS_min_intensity = 0, room=1,\
                         au_nrs = ["01", "02", "04", "05", "06", "07", "09", "10", "12", "14", "15",\
@@ -57,7 +106,7 @@ def make_comparison_table(openface_files, openface_timestamp_files, human_FACS_f
     
     data = {}
             #["01", "02", "04", "05", "06", "07", "09", "12", "14", "15", 
-             # "20", "23", "26"] # 10?
+             # "20", "23", "26"] # 10? 
     
 
     for au in au_nrs: data.update({au:{"#of": [], 
@@ -214,27 +263,3 @@ def make_comparison_table(openface_files, openface_timestamp_files, human_FACS_f
         res.to_csv(output_file_path)
         
     return res
-
-def get_quality_openface_au_detection(df, au_nr):
-    
-    warnings_openface_result = {"always_detect_warning": False}
-    
-    if int(au_nr) < 10: au_nr = "AU0"+str(au_nr)
-    else: au_nr = "AU"+str(au_nr)
-    
-    au_continuous = au_nr+"_r"
-    au_discrete = au_nr+"_c"
-
-    # Calculate average noise
-    
-
-
-
-    # Calculate average level discrete
-    #   Some discrete curves are just completely at 1. Probably because the AU seems to be
-    #   active all the time for openface. This could be if people have certain kinds of
-    #   idle faces or if the face orientation mimics an AU (e.g. looking down and lowering brows)
-    if np.mean(df[au_discrete])>0.2:
-        warnings_openface_result["always_detect_warning"] = True
-
-    return warnings_openface_result
