@@ -8,6 +8,7 @@ import warnings
 import exploface.conversions
 import exploface.extraction
 import exploface.analysis
+import exploface.visualization
 
 __version__ = "0.0.0.dev5"
 
