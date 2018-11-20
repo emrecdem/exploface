@@ -12,6 +12,8 @@ import exploface.visualization
 
 __version__ = "0.0.0.dev5"
 
+_FEAT_NAME_ID = "feature"
+
 def get_info(csv_path, max_len_col_names=10):
     """
     Returns some basic information on the openface file.
@@ -49,7 +51,10 @@ def get_statistics( csv_path,
     csv_path: path to the openface csv output file
     Other parameters see write_elan_file()
     """
-    df_detections = get_detections(csv_path,
+
+    ts = get_feature_time_series(csv_path)
+
+    df_detections = get_detections(ts,
                                     skip_seconds_at_end= skip_seconds_at_end,
                                     intensity_threshold= intensity_threshold,
                                     time_threshold= time_threshold,
@@ -58,15 +63,15 @@ def get_statistics( csv_path,
                                     )
 
     if not column_selection:
-        column_selection = set(df_detections["au"])
+        column_selection = set(df_detections[_FEAT_NAME_ID])
 
     list_nr_detections = []
     ave_length = []
     std_ave_length = []
     au_dataframe = []
     for au in column_selection:
-        if au in list(df_detections["au"]):
-            detections = df_detections[df_detections["au"]==au]
+        if au in list(df_detections[_FEAT_NAME_ID]):
+            detections = df_detections[df_detections[_FEAT_NAME_ID]==au]
             nr_detections = len(detections)
             duration = detections["end"]-detections["start"]
 
@@ -89,8 +94,14 @@ def get_statistics( csv_path,
 
     return df_res.sort_index()
 
- 
-def get_detections(csv_path, 
+
+def get_feature_time_series(csv_path):
+
+    df = pd.read_csv(csv_path,skipinitialspace=True )
+
+    return df
+
+def get_detections(feature_time_series, 
                     skip_seconds_at_end=0,
                     intensity_threshold=0.8,
                     time_threshold=0.1,
@@ -105,7 +116,7 @@ def get_detections(csv_path,
     Other parameters see write_elan_file()
     ...
     """
-    df = pd.read_csv(csv_path,skipinitialspace=True )
+    df = feature_time_series#pd.read_csv(csv_path,skipinitialspace=True )
 
     AUs = []
     start_list = []
@@ -127,18 +138,13 @@ def get_detections(csv_path,
                     start_list.append(t[0])
                     end_list.append(t[1])
 
-    return pd.DataFrame({"start": start_list, "end":end_list, "au": AUs})
+    return pd.DataFrame({"start": start_list, "end":end_list, _FEAT_NAME_ID: AUs})
 
 
-def write_elan_file(csv_path, 
+def write_elan_file(detections, 
                     output_path=None,
                     video_path=None,
-                    column_selection = None,
-                    skip_seconds_at_end=0,
-                    intensity_threshold=0.8,
-                    time_threshold=0.1,
-                    smooth_time_threshold = 0.1,
-                    uncertainty_threshold=0.9,
+                    #column_selection = None,
                     ):
     """
     Generates an Elan file for csv_path (an openface output file)
@@ -153,54 +159,50 @@ def write_elan_file(csv_path,
     smooth_time_threshold: 
     uncertainty_threshold: 
     """
-    df_detections = get_detections(csv_path, 
-                    skip_seconds_at_end=skip_seconds_at_end,
-                    intensity_threshold=intensity_threshold,
-                    time_threshold=time_threshold,
-                    smooth_time_threshold = smooth_time_threshold,
-                    uncertainty_threshold=uncertainty_threshold
-                    )
+    elanwriter.write_elan_file(detections, video_path, output_path, 
+        feature_col_name = _FEAT_NAME_ID)
 
-    if not column_selection:
-        column_selection = set(df_detections["au"])
+    #df_detections = detections
 
-    ##
-    # Make the Elan file
-    ##
-    if output_path:
-        output_directory = os.path.dirname(output_path)
-        output_filename = os.path.basename(output_path)
-        video_dir = os.path.dirname(video_path)
-        video_filename = os.path.basename(video_path)
+    # column_selection = set(df_detections[_FEAT_NAME_ID])
 
-        if video_dir == "":
-            video_dir = "."
+    # ##
+    # # Make the Elan file
+    # ##
+    # if output_path:
+    #     output_directory = os.path.dirname(output_path)
+    #     output_filename = os.path.basename(output_path)
+    #     video_dir = os.path.dirname(video_path)
+    #     video_filename = os.path.basename(video_path)
 
-        if os.path.isfile(video_path):
-            rel_video_path = os.path.join( os.path.relpath(video_dir, output_directory), video_filename )
-        else:
-            #warnings.warn("No video file found for the elan file. Video file: {}".format(video_path))
-            rel_video_path = "video_not_found"
+    #     if video_dir == "":
+    #         video_dir = "."
 
-        ed = elanwriter.ElanDoc(rel_video_path)
+    #     if os.path.isfile(video_path):
+    #         rel_video_path = os.path.join( os.path.relpath(video_dir, output_directory), video_filename )
+    #     else:
+    #         #warnings.warn("No video file found for the elan file. Video file: {}".format(video_path))
+    #         rel_video_path = "video_not_found"
+
+    #     ed = elanwriter.ElanDoc(rel_video_path)
         
-        ##
-        # Start looping over the AUs
-        for au in column_selection:
+    #     ##
+    #     # Start looping over the AUs
+    #     for au in column_selection:
             
-            times = df_detections[df_detections["au"] == au]
-            for i in range(len(times)):
-                annotation_name = times.iloc[i]["au"]
-                if "modifier" in times.columns:
-                    if times.iloc[i]["modifier"] and not np.isnan(times.iloc[i]["modifier"]):
-                        annotation_name = "I="+str(times.iloc[i]["modifier"])
+    #         times = df_detections[df_detections[_FEAT_NAME_ID] == au]
+    #         for i in range(len(times)):
+    #             annotation_name = times.iloc[i][_FEAT_NAME_ID]
+    #             if "modifier" in times.columns:
+    #                 if times.iloc[i]["modifier"] and not np.isnan(times.iloc[i]["modifier"]):
+    #                     annotation_name = "I="+str(times.iloc[i]["modifier"])
 
-                ed.add_annotation((1000*times.iloc[i]["start"], 1000*times.iloc[i]["end"]), 
-                                  annotation_name, tier_name=times.iloc[i]["au"])
-            if len(times) == 0:
-                ed.add_annotation((0,0.1), 
-                                  "", au)
+    #             ed.add_annotation((1000*times.iloc[i]["start"], 1000*times.iloc[i]["end"]), 
+    #                               annotation_name, tier_name=times.iloc[i][_FEAT_NAME_ID])
+    #         if len(times) == 0:
+    #             ed.add_annotation((0,0.1), 
+    #                               "", au)
 
-        ed.write(output_path)
+    #     ed.write(output_path)
 
-    return df_detections
+    # return df_detections
