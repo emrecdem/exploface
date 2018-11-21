@@ -10,7 +10,7 @@ import exploface.extraction
 import exploface.analysis
 import exploface.visualization
 
-__version__ = "0.0.0.dev5"
+__version__ = "0.0.0.dev6"
 
 _FEAT_NAME_ID = "feature"
 
@@ -109,7 +109,7 @@ def get_detections(feature_time_series,
                     uncertainty_threshold=0.9
                     ):
     """
-    Generates a timestamp formatted pandas.DataFrame. This contains on a row
+    Generates a pandas.DataFrame with detections. This contains on every row
     a detection of an action unit and its start and end times.
     Return: pandas dataframe with timestamps
     csv_path: path to the openface csv output file
@@ -147,62 +147,8 @@ def write_elan_file(detections,
                     #column_selection = None,
                     ):
     """
-    Generates an Elan file for csv_path (an openface output file)
-    Return: pandas dataframe with timestamp formatted openface output
-    csv_path: path to the openface csv output file
-    output_path: 
-    video_path: 
-    column_selection: 
-    skip_seconds_at_end: 
-    intensity_threshold: 
-    time_threshold: 
-    smooth_time_threshold: 
-    uncertainty_threshold: 
+    Generates an Elan file for the detections
+
     """
     elanwriter.write_elan_file(detections, video_path, output_path, 
         feature_col_name = _FEAT_NAME_ID)
-
-    #df_detections = detections
-
-    # column_selection = set(df_detections[_FEAT_NAME_ID])
-
-    # ##
-    # # Make the Elan file
-    # ##
-    # if output_path:
-    #     output_directory = os.path.dirname(output_path)
-    #     output_filename = os.path.basename(output_path)
-    #     video_dir = os.path.dirname(video_path)
-    #     video_filename = os.path.basename(video_path)
-
-    #     if video_dir == "":
-    #         video_dir = "."
-
-    #     if os.path.isfile(video_path):
-    #         rel_video_path = os.path.join( os.path.relpath(video_dir, output_directory), video_filename )
-    #     else:
-    #         #warnings.warn("No video file found for the elan file. Video file: {}".format(video_path))
-    #         rel_video_path = "video_not_found"
-
-    #     ed = elanwriter.ElanDoc(rel_video_path)
-        
-    #     ##
-    #     # Start looping over the AUs
-    #     for au in column_selection:
-            
-    #         times = df_detections[df_detections[_FEAT_NAME_ID] == au]
-    #         for i in range(len(times)):
-    #             annotation_name = times.iloc[i][_FEAT_NAME_ID]
-    #             if "modifier" in times.columns:
-    #                 if times.iloc[i]["modifier"] and not np.isnan(times.iloc[i]["modifier"]):
-    #                     annotation_name = "I="+str(times.iloc[i]["modifier"])
-
-    #             ed.add_annotation((1000*times.iloc[i]["start"], 1000*times.iloc[i]["end"]), 
-    #                               annotation_name, tier_name=times.iloc[i][_FEAT_NAME_ID])
-    #         if len(times) == 0:
-    #             ed.add_annotation((0,0.1), 
-    #                               "", au)
-
-    #     ed.write(output_path)
-
-    # return df_detections

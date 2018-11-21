@@ -7,7 +7,7 @@ def readme():
 
 
 setuptools.setup(name='exploface',
-      version='0.0.0.dev5',
+      version='0.0.0.dev6',
       description='A tool to analyse and convert data coming from the face analysing software Openface (Cambridge).',
       long_description=readme(),
       long_description_content_type='text/markdown',
